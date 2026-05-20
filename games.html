@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sinergia - Juegos</title>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body class="games-page">
+        <header class="header">
+            <div class="header-container">
+                <h1 class="header-logo">Sinergia</h1>
+                <div class="header-search">
+                    <input type="text" placeholder="Buscar en Sirnergia..." />
+                    <button>🔍</button>
+                </div>
+                <div class="header-user">
+                    <div id="headerAvatar" class="profile-avatar-small">👤</div>
+                    <a href="main.html" class="btn-secondary">feed 🏠</a>
+                    <span id="userName"></span>
+                    <button id="logoutBtn" class="btn-logout">
+                        Cerrar sesión
+                    </button>
+                    <button
+                        id="mobileMenuBtn"
+                        class="mobile-menu-btn"
+                        aria-label="Menú móvil"
+                    >
+                        ⋮
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="games-page-container">
+                <h2 class="page-title">🎮 Juegos</h2>
+                <p class="page-subtitle">¡Diviértete y compite con tus amigos!</p>
+                
+                <!-- Menú principal: 6 tarjetas -->
+                <div id="gamesMenu" class="games-menu">
+                    <button class="game-card-btn" data-game="snake">
+                        <span class="game-icon">🐍</span><strong>Snake</strong
+                        ><small>Come manzanas sin chocarte</small>
+                    </button>
+                    <button class="game-card-btn" data-game="memory">
+                        <span class="game-icon">🃏</span
+                        ><strong>Memorama</strong
+                        ><small>Encuentra los pares</small>
+                    </button>
+                    <button class="game-card-btn" data-game="tetris">
+                        <span class="game-icon">🧱</span><strong>Tetris</strong
+                        ><small>Apila bloques y anota</small>
+                    </button>
+                    <button class="game-card-btn" data-game="2048">
+                        <span class="game-icon">🔢</span><strong>2048</strong
+                        ><small>Llega a la ficha 2048</small>
+                    </button>
+                    <button class="game-card-btn" data-game="ppt">
+                        <span class="game-icon">✊</span
+                        ><strong>Piedra Papel Tijeras</strong
+                        ><small>10 rondas vs la CPU</small>
+                    </button>
+                    <button class="game-card-btn" data-game="leaderboard">
+                        <span class="game-icon">🏆</span
+                        ><strong>Clasificaciones</strong
+                        ><small>Ver ranking de todos</small>
+                    </button>
+                </div>
+
+                <!-- Sub-ventana: juego activo -->
+                <div id="gameContainer" class="game-container hidden"></div>
+
+                <!-- Sub-ventana: tabla de clasificaciones -->
+                <div id="leaderboardPanel" class="leaderboard-panel hidden">
+                    <button id="backFromLeaderboardBtn" class="game-back-btn">
+                        ← Volver
+                    </button>
+                    <h3 class="lb-panel-title">🏆 Clasificaciones</h3>
+                    <div class="lb-tabs">
+                        <button class="lb-tab active" data-tab="snake">
+                            🐍
+                        </button>
+                        <button class="lb-tab" data-tab="memory">🃏</button>
+                        <button class="lb-tab" data-tab="tetris">🧱</button>
+                        <button class="lb-tab" data-tab="2048">🔢</button>
+                        <button class="lb-tab" data-tab="ppt">✊</button>
+                        <button class="lb-tab" data-tab="total">🏆</button>
+                    </div>
+                    <div id="lbTabSnake" class="lb-tab-content">
+                        <p class="leaderboard-hint">
+                            🐍 Snake — Mayor puntaje gana
+                        </p>
+                        <div id="leaderboardSnake" class="leaderboard-body">
+                            Cargando...
+                        </div>
+                    </div>
+                    <div id="lbTabMemory" class="lb-tab-content hidden">
+                        <p class="leaderboard-hint">
+                            🃏 Memorama — Menor tiempo gana
+                        </p>
+                        <div id="leaderboardMemory" class="leaderboard-body">
+                            Cargando...
+                        </div>
+                    </div>
+                    <div id="lbTabTetris" class="lb-tab-content hidden">
+                        <p class="leaderboard-hint">
+                            🧱 Tetris — Mayor puntaje gana
+                        </p>
+                        <div id="leaderboardTetris" class="leaderboard-body">
+                            Cargando...
+                        </div>
+                    </div>
+                    <div id="lbTab2048" class="lb-tab-content hidden">
+                        <p class="leaderboard-hint">
+                            🔢 2048 — Mayor puntaje gana
+                        </p>
+                        <div id="leaderboard2048" class="leaderboard-body">
+                            Cargando...
+                        </div>
+                    </div>
+                    <div id="lbTabPPT" class="lb-tab-content hidden">
+                        <p class="leaderboard-hint">
+                            ✊ Piedra Papel Tijeras — Mayor puntaje gana
+                        </p>
+                        <div id="leaderboardPPT" class="leaderboard-body">
+                            Cargando...
+                        </div>
+                    </div>
+                    <div id="lbTabTotal" class="lb-tab-content hidden">
+                        <p class="leaderboard-hint">
+                            🏆 Total — Suma de todos los puntajes (Snake + Tetris + 2048 + PPT)
+                        </p>
+                        <div id="leaderboardTotal" class="leaderboard-body">
+                            Cargando...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="script.js"></script>
+    </body>
+</html>

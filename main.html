@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sinergia - Tu Red Social</title>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body class="main-page">
+        <header class="header">
+            <div class="header-container">
+                <h1 class="header-logo">Sinergia</h1>
+                <div class="header-search">
+                    <input type="text" placeholder="Buscar en Sirnergia..." />
+                    <button>🔍</button>
+                </div>
+                <div class="header-user">
+                    <div id="headerAvatar" class="profile-avatar-small">👤</div>
+                    <a href="games.html" class="btn-secondary">juegos 🎮</a>
+                    <span id="userName"></span>
+                    <button id="logoutBtn" class="btn-logout">
+                        Cerrar sesión
+                    </button>
+                    <button
+                        id="mobileMenuBtn"
+                        class="mobile-menu-btn"
+                        aria-label="Menú móvil"
+                    >
+                        ⋮
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mobile menu inserted dynamically by pages that load script.js -->
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="sidebar-card">
+                    <h3>Mi perfil</h3>
+                    <div class="profile-preview">
+                        <div id="sidebarProfileAvatar" class="profile-avatar">
+                            👤
+                        </div>
+                        <p id="profileName"></p>
+                        <a href="profile.html" class="btn-secondary"
+                            >Ver perfil</a
+                        >
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>Acciones rápidas</h3>
+                    <ul class="quick-links">
+                        <li><a href="chat.html">💬 Chats</a></li>
+                        <li><a href="profile.html">👥 Mi perfil</a></li>
+                        <li><a href="main.html?view=people">Personas</a></li>
+                        <li><a href="main.html?feed=friends">Amigos 👥</a></li>
+                        <li><a href="main.html?view=vid">🎬 Vid</a></li>
+                        <li>
+                            <a href="#" id="openStoryCreatorLink">Historias</a>
+                        </li>
+                        <li>
+                            <a href="#" data-open-settings="true"
+                                >⚙️ Configuración</a
+                            >
+                        </li>
+                        <li><a href="#" id="openGamesLink">🎮 Juegos</a></li>
+                        <li><a href="#" id="openEventsLink">📅 Eventos</a></li>
+                        <li>
+                            <a href="#" id="openSavedPostsLink">🔖 Guardados</a>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+
+            <section class="feed">
+                <div class="stories-section">
+                    <button
+                        id="createStoryBtn"
+                        class="story-create-card"
+                        type="button"
+                    >
+                        <span>+</span>
+                        <strong>Tu historia</strong>
+                    </button>
+                    <div id="storiesTray" class="stories-tray"></div>
+                </div>
+
+                <div class="post-creator">
+                    <div class="post-creator-header">
+                        <div id="composerAvatar" class="profile-avatar-small">
+                            👤
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="¿En qué estás pensando?"
+                            id="postInput"
+                        />
+                    </div>
+
+                    <div id="photoPreview" class="photo-preview hidden"></div>
+
+                    <div id="pollCreator" class="poll-creator hidden">
+                        <div class="poll-question-wrap">
+                            <input
+                                type="text"
+                                id="pollQuestion"
+                                placeholder="¿Cuál es tu pregunta?"
+                                maxlength="200"
+                                class="poll-question-input"
+                            />
+                        </div>
+                        <div id="pollOptions">
+                            <div class="poll-option-row">
+                                <input
+                                    type="text"
+                                    class="poll-option-input"
+                                    placeholder="Opción 1"
+                                    maxlength="80"
+                                /><button
+                                    class="poll-remove-option"
+                                    style="display: none"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            <div class="poll-option-row">
+                                <input
+                                    type="text"
+                                    class="poll-option-input"
+                                    placeholder="Opción 2"
+                                    maxlength="80"
+                                /><button
+                                    class="poll-remove-option"
+                                    style="display: none"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                        <button
+                            id="addPollOptionBtn"
+                            type="button"
+                            class="poll-add-option-btn"
+                        >
+                            + Agregar opción
+                        </button>
+                        <label
+                            style="
+                                font-size: 12px;
+                                color: #666;
+                                margin-top: 8px;
+                                display: block;
+                            "
+                        >
+                            Termina en:
+                            <input
+                                type="datetime-local"
+                                id="pollEndsAt"
+                                style="font-size: 12px; margin-left: 4px"
+                            />
+                        </label>
+                    </div>
+
+                    <div class="post-creator-footer">
+                        <input
+                            type="file"
+                            id="fileInput"
+                            multiple
+                            accept="image/*,video/mp4,video/webm,video/mov"
+                            style="display: none"
+                        />
+                        <button id="photoBtn" class="post-option">
+                            📸 Foto/Video
+                        </button>
+                        <button id="pollBtn" class="post-option" type="button">
+                            📊 Encuesta
+                        </button>
+                        <button
+                            id="mentionBtn"
+                            class="post-option"
+                            type="button"
+                        >
+                            @ Mencionar
+                        </button>
+                        <button id="publishBtn" class="btn-submit">
+                            Publicar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="postsContainer" class="posts-container"></div>
+
+                <article class="post fade-in">
+                    <div class="post-header">
+                        <div class="post-avatar">👤</div>
+                        <div class="post-info">
+                            <h4>Sirnergia</h4>
+                            <p class="post-time">Hace 2 horas</p>
+                        </div>
+                    </div>
+                    <p class="post-content">
+                        ¡Bienvenido a Sirnergia! Esta es una plataforma para
+                        conectar, compartir y crecer juntos.
+                    </p>
+                    <div class="post-actions">
+                        <button class="action-btn">👍 Me gusta</button>
+                        <button class="action-btn">💬 Comentar</button>
+                        <button class="action-btn">↗️ Compartir</button>
+                    </div>
+                </article>
+            </section>
+
+            <aside class="sidebar-right">
+                <div class="sidebar-card">
+                    <h3>Amigos sugeridos</h3>
+                    <div
+                        id="suggestedFriendsContainer"
+                        class="suggest-users"
+                    ></div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>Tendencias</h3>
+                    <ul class="trends">
+                        <li>
+                            <a href="main.html?hashtag=MARTINESMEJOR"
+                                >#MARTIN ES EL MEJOR</a
+                            >
+                        </li>
+                        <li>
+                            <a href="main.html?hashtag=ConexionesSignificativas"
+                                >#ConexionesSignificativas</a
+                            >
+                        </li>
+                        <li>
+                            <a href="main.html?hashtag=VLADEMIRZEREF"
+                                >#VLADEMIR ALIAS ZEREF</a
+                            >
+                        </li>
+                        <li>
+                            <a href="main.html?hashtag=ComunidadSirnergia"
+                                >#ComunidadSirnergia</a
+                            >
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+
+        <div id="notificationContainer" class="notification-container"></div>
+
+        <div
+            id="storyComposerModal"
+            class="modal-overlay hidden story-composer-overlay"
+        >
+            <div class="story-composer-fullscreen">
+                <!-- Paso 1: Elegir fuente -->
+                <div id="storyStep1" class="story-step">
+                    <button
+                        id="closeStoryComposerBtn"
+                        type="button"
+                        class="story-composer-close"
+                    >
+                        ×
+                    </button>
+                    <h2 class="story-step-title">Nueva historia</h2>
+                    <div class="story-source-grid">
+                        <button class="story-source-btn" id="storyCameraBtn">
+                            <span>📷</span>
+                            <strong>Cámara</strong>
+                            <small>Tomar foto ahora</small>
+                        </button>
+                        <button class="story-source-btn" id="storyGalleryBtn">
+                            <span>🖼️</span>
+                            <strong>Galería</strong>
+                            <small>Subir foto o video</small>
+                        </button>
+                    </div>
+                    <input
+                        type="file"
+                        id="storyMediaInput"
+                        accept="image/*,video/*"
+                        hidden
+                    />
+                </div>
+
+                <!-- Paso 2: Cámara en vivo -->
+                <div id="storyStep2Camera" class="story-step hidden">
+                    <button
+                        id="backToStep1FromCamera"
+                        type="button"
+                        class="story-composer-back"
+                    >
+                        ←
+                    </button>
+                    <video
+                        id="storyCameraFeed"
+                        autoplay
+                        playsinline
+                        muted
+                        class="story-camera-feed"
+                    ></video>
+                    <div class="story-camera-controls">
+                        <button
+                            id="storySwitchCameraBtn"
+                            class="story-cam-ctrl-btn"
+                            title="Cambiar cámara"
+                        >
+                            🔄
+                        </button>
+                        <button
+                            id="storyCaptureBtn"
+                            class="story-capture-btn"
+                        ></button>
+                        <div style="width: 44px"></div>
+                    </div>
+                    <canvas id="storyCaptureCanvas" hidden></canvas>
+                </div>
+
+                <!-- Paso 3: Editor -->
+                <div id="storyStep3Editor" class="story-step hidden">
+                    <button
+                        id="backToStep1FromEditor"
+                        type="button"
+                        class="story-composer-back"
+                    >
+                        ←
+                    </button>
+                    <button
+                        id="publishStoryBtn"
+                        type="button"
+                        class="story-publish-btn"
+                    >
+                        Publicar ›
+                    </button>
+
+                    <!-- Preview del medio -->
+                    <div class="story-editor-canvas" id="storyEditorCanvas">
+                        <div
+                            id="storyEditorMedia"
+                            class="story-editor-media"
+                        ></div>
+                        <!-- Stickers y textos se insertan aquí dinámicamente -->
+                    </div>
+
+                    <!-- Barra de herramientas -->
+                    <div class="story-editor-toolbar">
+                        <button
+                            class="story-tool-btn active"
+                            id="storyToolText"
+                            title="Texto"
+                        >
+                            𝐓
+                        </button>
+                        <button
+                            class="story-tool-btn"
+                            id="storyToolMention"
+                            title="Mencionar"
+                        >
+                            @
+                        </button>
+                        <button
+                            class="story-tool-btn"
+                            id="storyToolSticker"
+                            title="Sticker"
+                        >
+                            😊
+                        </button>
+                        <button
+                            class="story-tool-btn"
+                            id="storyToolDraw"
+                            title="Dibujar"
+                        >
+                            ✏️
+                        </button>
+                        <button
+                            class="story-tool-btn"
+                            id="storyToolFilter"
+                            title="Filtro"
+                        >
+                            🎨
+                        </button>
+                    </div>
+
+                    <!-- Panel de texto -->
+                    <div id="storyTextPanel" class="story-panel">
+                        <input
+                            id="storyTextInput"
+                            type="text"
+                            maxlength="80"
+                            placeholder="Escribe algo..."
+                            class="story-text-input"
+                        />
+                        <div class="story-text-colors">
+                            <button
+                                class="story-color-btn active"
+                                data-color="#ffffff"
+                                style="background: #fff; border: 2px solid #aaa"
+                            ></button>
+                            <button
+                                class="story-color-btn"
+                                data-color="#000000"
+                                style="background: #000"
+                            ></button>
+                            <button
+                                class="story-color-btn"
+                                data-color="#f02849"
+                                style="background: #f02849"
+                            ></button>
+                            <button
+                                class="story-color-btn"
+                                data-color="#1877f2"
+                                style="background: #1877f2"
+                            ></button>
+                            <button
+                                class="story-color-btn"
+                                data-color="#31a24c"
+                                style="background: #31a24c"
+                            ></button>
+                            <button
+                                class="story-color-btn"
+                                data-color="#f5a623"
+                                style="background: #f5a623"
+                            ></button>
+                            <button
+                                class="story-color-btn"
+                                data-color="#9b59b6"
+                                style="background: #9b59b6"
+                            ></button>
+                        </div>
+                        <div class="story-text-sizes">
+                            <button
+                                class="story-size-btn active"
+                                data-size="20"
+                            >
+                                S
+                            </button>
+                            <button class="story-size-btn" data-size="30">
+                                M
+                            </button>
+                            <button class="story-size-btn" data-size="42">
+                                L
+                            </button>
+                        </div>
+                        <button
+                            id="storyAddTextBtn"
+                            class="btn-submit"
+                            style="width: auto; padding: 8px 20px"
+                        >
+                            Agregar
+                        </button>
+                    </div>
+
+                    <!-- Panel de mención -->
+                    <div id="storyMentionPanel" class="story-panel hidden">
+                        <div style="position: relative">
+                            <input
+                                id="storyMentionInput"
+                                type="text"
+                                placeholder="@nombre de usuario..."
+                                class="story-text-input"
+                            />
+                        </div>
+                        <button
+                            id="storyAddMentionBtn"
+                            class="btn-submit"
+                            style="
+                                width: auto;
+                                padding: 8px 20px;
+                                margin-top: 6px;
+                            "
+                        >
+                            Agregar mención
+                        </button>
+                    </div>
+
+                    <!-- Panel de stickers -->
+                    <div id="storyStickerPanel" class="story-panel hidden">
+                        <div class="story-sticker-grid">
+                            <button class="story-sticker-pick">❤️</button>
+                            <button class="story-sticker-pick">😂</button>
+                            <button class="story-sticker-pick">🔥</button>
+                            <button class="story-sticker-pick">✨</button>
+                            <button class="story-sticker-pick">🎉</button>
+                            <button class="story-sticker-pick">😍</button>
+                            <button class="story-sticker-pick">👏</button>
+                            <button class="story-sticker-pick">💯</button>
+                            <button class="story-sticker-pick">🌈</button>
+                            <button class="story-sticker-pick">🎵</button>
+                            <button class="story-sticker-pick">⭐</button>
+                            <button class="story-sticker-pick">🚀</button>
+                            <button class="story-sticker-pick">💪</button>
+                            <button class="story-sticker-pick">👀</button>
+                            <button class="story-sticker-pick">🤣</button>
+                            <button class="story-sticker-pick">😎</button>
+                        </div>
+                    </div>
+
+                    <!-- Panel de filtros -->
+                    <div id="storyFilterPanel" class="story-panel hidden">
+                        <div class="story-filter-list">
+                            <button
+                                class="story-filter-btn active"
+                                data-filter="none"
+                            >
+                                Normal
+                            </button>
+                            <button
+                                class="story-filter-btn"
+                                data-filter="grayscale(100%)"
+                            >
+                                B&N
+                            </button>
+                            <button
+                                class="story-filter-btn"
+                                data-filter="sepia(80%)"
+                            >
+                                Sepia
+                            </button>
+                            <button
+                                class="story-filter-btn"
+                                data-filter="saturate(200%)"
+                            >
+                                Vivo
+                            </button>
+                            <button
+                                class="story-filter-btn"
+                                data-filter="brightness(1.3) contrast(1.1)"
+                            >
+                                Brillante
+                            </button>
+                            <button
+                                class="story-filter-btn"
+                                data-filter="hue-rotate(90deg)"
+                            >
+                                Verde
+                            </button>
+                            <button
+                                class="story-filter-btn"
+                                data-filter="hue-rotate(200deg)"
+                            >
+                                Azul
+                            </button>
+                            <button
+                                class="story-filter-btn"
+                                data-filter="invert(100%)"
+                            >
+                                Invertir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="storyViewerModal" class="modal-overlay hidden">
+            <div class="modal-panel story-viewer-panel">
+                <button
+                    id="closeStoryViewerBtn"
+                    type="button"
+                    class="modal-close-btn story-viewer-close"
+                >
+                    ×
+                </button>
+                <button
+                    id="storyPrevBtn"
+                    type="button"
+                    class="story-nav-btn story-nav-prev"
+                >
+                    &#8249;
+                </button>
+                <button
+                    id="storyNextBtn"
+                    type="button"
+                    class="story-nav-btn story-nav-next"
+                >
+                    &#8250;
+                </button>
+                <div id="storyViewerContent"></div>
+            </div>
+        </div>
+
+        <div id="gamesModal" class="modal-overlay hidden">
+            <div class="modal-panel games-panel">
+                <div class="modal-header">
+                    <h3>🎮 Juegos</h3>
+                    <button
+                        id="closeGamesBtn"
+                        type="button"
+                        class="modal-close-btn"
+                    >
+                        ×
+                    </button>
+                </div>
+                <!-- Menú principal: 6 tarjetas -->
+                <div id="gamesMenu" class="games-menu">
+                    <button class="game-card-btn" data-game="snake">
+                        <span class="game-icon">🐍</span><strong>Snake</strong
+                        ><small>Come manzanas sin chocarte</small>
+                    </button>
+                    <button class="game-card-btn" data-game="memory">
+                        <span class="game-icon">🃏</span
+                        ><strong>Memorama</strong
+                        ><small>Encuentra los pares</small>
+                    </button>
+                    <button class="game-card-btn" data-game="tetris">
+                        <span class="game-icon">🧱</span><strong>Tetris</strong
+                        ><small>Apila bloques y anota</small>
+                    </button>
+                    <button class="game-card-btn" data-game="2048">
+                        <span class="game-icon">🔢</span><strong>2048</strong
+                        ><small>Llega a la ficha 2048</small>
+                    </button>
+                    <button class="game-card-btn" data-game="ppt">
+                        <span class="game-icon">✊</span
+                        ><strong>Piedra Papel Tijeras</strong
+                        ><small>10 rondas vs la CPU</small>
+                    </button>
+                    <button class="game-card-btn" data-game="leaderboard">
+                        <span class="game-icon">🏆</span
+                        ><strong>Clasificaciones</strong
+                        ><small>Ver ranking de todos</small>
+                    </button>
+                </div>
+
+                <!-- Sub-ventana: juego activo -->
+                <div id="gameContainer" class="game-container hidden"></div>
+
+                <!-- Sub-ventana: tabla de clasificaciones -->
+                <div id="leaderboardPanel" class="leaderboard-panel hidden">
+                    <button id="backFromLeaderboardBtn" class="game-back-btn">
+                        ← Volver
+                    </button>
+                    <h3 class="lb-panel-title">🏆 Clasificaciones</h3>
+                    <div class="lb-tabs">
+                        <button class="lb-tab active" data-tab="snake">
+                            🐍
+                        </button>
+                        <button class="lb-tab" data-tab="memory">🃏</button>
+                        <button class="lb-tab" data-tab="tetris">🧱</button>
+                        <button class="lb-tab" data-tab="2048">🔢</button>
+                        <button class="lb-tab" data-tab="ppt">✊</button>
+                    </div>
+                    <div id="lbTabSnake" class="lb-tab-content">
+                        <p class="leaderboard-hint">
+                            🐍 Snake — Mayor puntaje gana
+                        </p>
+                        <div id="leaderboardSnake" class="leaderboard-body">
+                            Cargando...
+                        </div>
+                    </div>
+                    <div id="lbTabMemory" class="lb-tab-content hidden">
+                        <p class="leaderboard-hint">
+                            🃏 Memorama — Menor tiempo gana
+                        </p>
+                        <div id="leaderboardMemory" class="leaderboard-body">
+                            Cargando...
+                        </div>
+                    </div>
+                    <div id="lbTabTetris" class="lb-tab-content hidden">
+                        <p class="leaderboard-hint">
+                            🧱 Tetris — Mayor puntaje gana
+                        </p>
+                        <div id="leaderboardTetris" class="leaderboard-body">
+                            Cargando...
+                        </div>
+                    </div>
+                    <div id="lbTab2048" class="lb-tab-content hidden">
+                        <p class="leaderboard-hint">
+                            🔢 2048 — Mayor puntaje gana
+                        </p>
+                        <div id="leaderboard2048" class="leaderboard-body">
+                            Cargando...
+                        </div>
+                    </div>
+                    <div id="lbTabPPT" class="lb-tab-content hidden">
+                        <p class="leaderboard-hint">
+                            ✊ Piedra Papel Tijeras — Mayor puntaje gana
+                        </p>
+                        <div id="leaderboardPPT" class="leaderboard-body">
+                            Cargando...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Eventos -->
+        <div id="eventsModal" class="modal-overlay hidden">
+            <div class="modal-panel events-panel">
+                <div class="modal-header">
+                    <h3>📅 Eventos</h3>
+                    <button id="closeEventsBtn" class="modal-close-btn">
+                        ×
+                    </button>
+                </div>
+                <button
+                    id="createEventBtn"
+                    class="btn-submit"
+                    style="margin-bottom: 16px; width: auto; padding: 8px 20px"
+                >
+                    + Crear evento
+                </button>
+                <div id="createEventForm" class="create-event-form hidden">
+                    <input
+                        type="text"
+                        id="eventTitle"
+                        placeholder="Título del evento *"
+                        maxlength="200"
+                        class="event-input"
+                    />
+                    <textarea
+                        id="eventDescription"
+                        placeholder="Descripción..."
+                        maxlength="2000"
+                        class="event-input"
+                        rows="3"
+                    ></textarea>
+                    <input
+                        type="datetime-local"
+                        id="eventDate"
+                        class="event-input"
+                    />
+                    <input
+                        type="text"
+                        id="eventLocation"
+                        placeholder="Ubicación"
+                        maxlength="300"
+                        class="event-input"
+                    />
+                    <div style="display: flex; gap: 8px; margin-top: 8px">
+                        <button
+                            id="submitEventBtn"
+                            class="btn-submit"
+                            style="width: auto; padding: 8px 20px"
+                        >
+                            Crear
+                        </button>
+                        <button
+                            id="cancelEventBtn"
+                            class="btn-secondary"
+                            style="padding: 8px 20px"
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+                <div id="eventsList" class="events-list">
+                    Cargando eventos...
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Posts Guardados -->
+        <div id="savedPostsModal" class="modal-overlay hidden">
+            <div
+                class="modal-panel"
+                style="max-width: 680px; max-height: 80vh; overflow-y: auto"
+            >
+                <div class="modal-header">
+                    <h3>🔖 Posts guardados</h3>
+                    <button id="closeSavedPostsBtn" class="modal-close-btn">
+                        ×
+                    </button>
+                </div>
+                <div id="savedPostsList" style="padding: 16px">Cargando...</div>
+            </div>
+        </div>
+
+        <!-- Modal Reporte -->
+        <div id="reportModal" class="modal-overlay hidden">
+            <div class="modal-panel" style="max-width: 420px">
+                <div class="modal-header">
+                    <h3>🚩 Reportar contenido</h3>
+                    <button id="closeReportBtn" class="modal-close-btn">
+                        ×
+                    </button>
+                </div>
+                <div style="padding: 20px">
+                    <p style="margin-bottom: 12px; color: #555">
+                        ¿Por qué reportas este contenido?
+                    </p>
+                    <select
+                        id="reportReason"
+                        class="event-input"
+                        style="margin-bottom: 10px"
+                    >
+                        <option value="">-- Selecciona un motivo --</option>
+                        <option value="spam">Spam</option>
+                        <option value="harassment">Acoso</option>
+                        <option value="hate_speech">Discurso de odio</option>
+                        <option value="misinformation">
+                            Información falsa
+                        </option>
+                        <option value="nudity">Contenido adulto</option>
+                        <option value="violence">Violencia</option>
+                        <option value="other">Otro</option>
+                    </select>
+                    <textarea
+                        id="reportDescription"
+                        placeholder="Descripción adicional (opcional)..."
+                        maxlength="500"
+                        class="event-input"
+                        rows="3"
+                    ></textarea>
+                    <button
+                        id="submitReportBtn"
+                        class="btn-submit"
+                        style="margin-top: 12px"
+                    >
+                        Enviar reporte
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script src="script.js"></script>
+    </body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sinergia - Conecta con el mundo del cbtis</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo-section">
+                <h1 class="logo">Sinergia</h1>
+                <p class="tagline">Conecta con el mundo del cbtis<P >
+                    creadores: José Martín y Vlademir
+                </p>
+            </div>
+
+            <!-- Formulario de Login -->
+            <form id="loginForm" class="form-container active-form">
+                <h2>Inicia Sesión</h2>
+                <div class="form-group">
+                    <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" placeholder="Contraseña" required>
+                </div>
+                <button type="submit" class="btn-submit">
+                    <span class="btn-text">Iniciar Sesión</span>
+                    <span class="loader"></span>
+                </button>
+                <div class="google-divider"><span>o</span></div>
+                <div id="googleSignInBtn" class="google-signin-btn">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" width="20" height="20">
+                    Continuar con Google
+                </div>
+                <p class="form-switch">
+                    ¿No tienes cuenta? <a href="#" onclick="toggleForm(event)">Regístrate aquí</a>
+                </p>
+            </form>
+
+            <!-- Formulario de Registro -->
+            <form id="registerForm" class="form-container">
+                <h2>Crear Cuenta</h2>
+                <div class="form-row">
+                    <div class="form-group half">
+                        <input type="text" id="registerFirstName" placeholder="Nombre" required>
+                    </div>
+                    <div class="form-group half">
+                        <input type="text" id="registerLastName" placeholder="Apellido" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="registerEmail" placeholder="Correo electrónico" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="registerPassword" placeholder="Contraseña" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="registerConfirmPassword" placeholder="Confirmar contraseña" required>
+                </div>
+                <button type="submit" class="btn-submit">
+                    <span class="btn-text">Registrarse</span>
+                    <span class="loader"></span>
+                </button>
+                <div class="google-divider"><span>o</span></div>
+                <div id="googleSignInBtnRegister" class="google-signin-btn">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" width="20" height="20">
+                    Registrarse con Google
+                </div>
+                <p class="form-switch">
+                    ¿Ya tienes cuenta? <a href="#" onclick="toggleForm(event)">Inicia sesión aquí</a>
+                </p>
+            </form>
+        </div>
+
+        <!-- Sección informativa -->
+        <div class="info-section">
+            <h2>Bienvenido a Sinergia</h2>
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">👥</div>
+                    <h3>Conecta</h3>
+                    <p>Encuentra amigos y crea conexiones significativas</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">💬</div>
+                    <h3>Comparte</h3>
+                    <p>Expresa tus ideas y momentos con tu comunidad</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🌟</div>
+                    <h3>Crece</h3>
+                    <p>Desarrollo personal a través de interacciones significativas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificación de animación -->
+    <div id="notificationContainer" class="notification-container"></div>
+
+    <script src="script.js"></script>
+    <script>
+        // Inicializar Google Identity Services cuando cargue
+        window.addEventListener('load', async () => {
+            try {
+                // Obtener el Client ID desde el servidor
+                const cfg = await fetch('/api/config/public').then(r => r.json());
+                const clientId = cfg.googleClientId;
+                if (!clientId) return; // Google OAuth no configurado, ocultar botones
+
+                window.GOOGLE_CLIENT_ID = clientId;
+
+                // Esperar a que el script de Google cargue
+                const waitForGoogle = () => new Promise(resolve => {
+                    if (window.google) { resolve(); return; }
+                    const interval = setInterval(() => {
+                        if (window.google) { clearInterval(interval); resolve(); }
+                    }, 100);
+                });
+                await waitForGoogle();
+
+                google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleGoogleCredential,
+                    auto_select: false
+                });
+
+                // Mostrar botones
+                ['googleSignInBtn', 'googleSignInBtnRegister'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) {
+                        btn.style.display = 'flex';
+                        btn.addEventListener('click', () => google.accounts.id.prompt());
+                    }
+                });
+                document.querySelectorAll('.google-divider').forEach(d => d.style.display = 'flex');
+
+            } catch (e) {
+                // Si falla, simplemente no se muestran los botones de Google
+            }
+        });
+
+        async function handleGoogleCredential(response) {
+            try {
+                const API_BASE = window.API_BASE_URL || '/api';
+                const res = await fetch(`${API_BASE}/auth/google`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ credential: response.credential })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Error al iniciar sesión con Google');
+
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('userLogged', JSON.stringify(data.user));
+                window.location.href = 'main.html';
+            } catch (err) {
+                alert('Error con Google: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

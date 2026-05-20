@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sirnergia - Personalizar perfil</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="profile-page">
+    <header class="header">
+        <div class="header-container">
+            <h1 class="header-logo">Sirnergia</h1>
+            <div class="header-search">
+                <input type="text" placeholder="Buscar en Sirnergia...">
+                <button>Buscar</button>
+            </div>
+            <div class="header-user">
+                <div id="headerAvatar" class="profile-avatar-small">User</div>
+                <a href="profile.html" class="btn-secondary">Ver perfil</a>
+                <span id="userName"></span>
+                <button id="logoutBtn" class="btn-logout">Cerrar sesion</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <aside class="sidebar">
+            <div class="sidebar-card">
+                <h3>Vista previa</h3>
+                <div class="profile-preview">
+                    <div id="userProfileAvatar" class="profile-avatar">User</div>
+                    <p id="userProfileName" class="profile-name">Nombre Apellido</p>
+                    <p id="userProfileBio" class="profile-bio">Tu biografia aparece aqui.</p>
+                    <p class="profile-meta"><strong>Publicaciones:</strong> <span id="userProfilePostsCount">0</span></p>
+                    <p class="profile-meta"><strong>Amigos:</strong> <span id="userProfileFriendsCount">0</span></p>
+                    <p class="profile-meta"><strong>Registrado:</strong> <span id="userProfileJoined">--</span></p>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3>Opciones</h3>
+                <ul class="quick-links">
+                    <li><a href="profile.html">Ver perfil</a></li>
+                    <li><a href="main.html">Volver al feed</a></li>
+                    <li><a href="chat.html">Chats</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <section class="feed">
+            <div id="profileEditorCard" class="profile-header-card">
+                <h2>Personalizar perfil</h2>
+                <p>Cambia tu foto, nombre, apellido y biografia.</p>
+
+                <div class="profile-form">
+                    <label>Foto de perfil</label>
+                    <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                    <button id="changeAvatarBtn" class="btn-secondary profile-avatar-btn" type="button">Cambiar foto de perfil</button>
+                </div>
+
+                <form id="profileForm" class="profile-form">
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="editFirstName">Nombre</label>
+                            <input id="editFirstName" type="text" maxlength="40" placeholder="Tu nombre">
+                        </div>
+                        <div class="form-group half">
+                            <label for="editLastName">Apellido</label>
+                            <input id="editLastName" type="text" maxlength="40" placeholder="Tu apellido">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editBio">Biografia</label>
+                        <textarea id="editBio" rows="4" maxlength="220" placeholder="Cuentale algo a la gente sobre ti"></textarea>
+                    </div>
+
+                    <button id="saveProfileBtn" type="submit" class="btn-submit">
+                        <span class="btn-text">Guardar cambios</span>
+                        <span class="loader"></span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <aside class="sidebar-right">
+            <div class="sidebar-card">
+                <h3>Consejos</h3>
+                <p>Tu perfil se actualiza para el feed, chats, amigos y publicaciones.</p>
+            </div>
+        </aside>
+    </div>
+
+    <div id="notificationContainer" class="notification-container"></div>
+    <script src="script.js"></script>
+    <script>
+        // Bloquear acceso a esta página si no eres el propietario del perfil
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const requestedId = params.get('id');
+                const userData = localStorage.getItem('userLogged');
+                if (!userData) {
+                    // No logueado -> volver al login
+                    window.location.href = 'index.html';
+                    return;
+                }
+                const user = JSON.parse(userData);
+                if (requestedId && String(requestedId) !== String(user._id)) {
+                    // Intento de editar otro perfil: redirigir a la vista pública
+                    window.location.href = `profile.html?id=${requestedId}`;
+                    return;
+                }
+                // OK: eres el propietario, la página puede continuar
+            } catch (e) {
+                console.error('Error en guard de customize-profile:', e);
+            }
+        });
+    </script>
+</body>
+</html>

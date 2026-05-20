@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sirnergia - Perfil</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="profile-page">
+    <header class="header">
+        <div class="header-container">
+            <h1 class="header-logo">Sirnergia</h1>
+            <div class="header-search">
+                <input type="text" placeholder="Buscar en Sirnergia...">
+                <button>🔍</button>
+            </div>
+            <div class="header-user">
+                <div id="headerAvatar" class="profile-avatar-small">👤</div>
+                <a id="backToFeedBtn" href="main.html" class="btn-secondary">Feed 🏠</a>
+                <span id="userName"></span>
+                <button id="logoutBtn" class="btn-logout">Cerrar sesión</button>
+                <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Menú móvil">⋮</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <aside class="sidebar">
+            <div class="sidebar-card">
+                <h3 id="profileSidebarTitle">Mi perfil</h3>
+                <div class="profile-preview">
+                    <div id="userProfileAvatar" class="profile-avatar">👤</div>
+                    <p id="userProfileName" class="profile-name">Nombre Apellido</p>
+                    <p id="userProfileBio" class="profile-bio">Tu biografía aparece aquí.</p>
+                    <p class="profile-meta"><strong>Publicaciones:</strong> <span id="userProfilePostsCount">0</span></p>
+                    <p class="profile-meta"><strong>Amigos:</strong> <span id="userProfileFriendsCount">0</span></p>
+                    <p class="profile-meta"><strong>Registrado:</strong> <span id="userProfileJoined">--</span></p>
+                    <a id="customizeProfileBtn" href="customize-profile.html" class="btn-secondary profile-avatar-btn">Personalizar perfil</a>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3>Opciones</h3>
+                <ul class="quick-links">
+                    <li><a href="main.html">🏠 Volver al feed</a></li>
+                    <li><a href="chat.html">💬 Chats</a></li>
+                    <li><a href="customize-profile.html">Personalizar perfil</a></li>
+                    <li><a href="#profileFriendsCard">👥 Ver amigos</a></li>
+                    <li><a href="#profilePostsContainer">📝 Mis publicaciones</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <section class="feed">
+            <!-- Tarjeta de perfil visual (hero) -->
+            <div id="profileHeroCard" class="profile-hero-card">
+                <div id="profileHeroAvatar" class="profile-hero-avatar">👤</div>
+                <div class="profile-hero-info">
+                    <h2 id="profileHeroName">Nombre Apellido</h2>
+                    <p id="profileHeroBio" class="profile-hero-bio"></p>
+                    <div class="profile-hero-stats">
+                        <div class="profile-stat">
+                            <span id="profileHeroPosts" class="profile-stat-num">0</span>
+                            <span class="profile-stat-label">Publicaciones</span>
+                        </div>
+                        <button id="profileFriendsBtn" class="profile-stat profile-stat-btn">
+                            <span id="profileHeroFriends" class="profile-stat-num">0</span>
+                            <span class="profile-stat-label">Amigos</span>
+                        </button>
+                        <div class="profile-stat">
+                            <span id="profileHeroJoined" class="profile-stat-label">--</span>
+                        </div>
+                    </div>
+                    <div id="profileHeroActions" class="profile-hero-actions"></div>
+                </div>
+            </div>
+
+            <div class="profile-header-card">
+                <h2 id="profilePostsTitle">Mis publicaciones</h2>
+                <p id="profilePostsDescription">Estas son todas las publicaciones que has creado.</p>
+            </div>
+
+            <div id="profilePostsContainer" class="posts-container"></div>
+        </section>
+
+        <aside class="sidebar-right">
+            <div class="sidebar-card">
+                <h3>Consejos</h3>
+                <p>Tu foto, nombre, biografía y lista de amigos aparecerán en las zonas principales de tu cuenta.</p>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Modal de amigos -->
+    <div id="profileFriendsModal" class="modal-overlay hidden">
+        <div class="modal-panel">
+            <div class="modal-header">
+                <h3 id="profileFriendsModalTitle">Amigos</h3>
+                <button id="closeProfileFriendsBtn" type="button" class="modal-close-btn">×</button>
+            </div>
+            <div id="profileFriendsList" class="friends-list"></div>
+        </div>
+    </div>
+
+    <!-- Mantener el id antiguo para compatibilidad con el JS existente -->
+    <div id="profileFriendsCard" style="display:none">
+        <div id="profileFriendsCardLegacy"></div>
+    </div>
+
+    <div id="notificationContainer" class="notification-container"></div>
+    <script src="script.js"></script>
+</body>
+</html>

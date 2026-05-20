@@ -1,0 +1,1828 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sirnergia - Chat</title>
+        <link rel="stylesheet" href="styles.css" />
+        <style>
+            .main-content {
+                display: block;
+                padding: 0;
+                margin: 0;
+                max-width: 100%;
+            }
+            .chat-container {
+                display: flex;
+                height: calc(100vh - 100px);
+                margin: 0;
+            }
+            .chat-sidebar {
+                width: 300px;
+                border-right: 1px solid #ddd;
+                padding: 20px;
+                overflow-y: auto;
+                flex-shrink: 0;
+            }
+            .chat-main {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+            }
+            .conversations-list,
+            .friends-list {
+                margin-bottom: 30px;
+            }
+            .conversation-item,
+            .friend-item {
+                display: flex;
+                align-items: center;
+                padding: 10px;
+                border-bottom: 1px solid #eee;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+            .conversation-item:hover,
+            .friend-item:hover {
+                background-color: #f5f5f5;
+            }
+            .conversation-item.active,
+            .friend-item.active {
+                background-color: #e3f2fd;
+            }
+            .conversation-avatar,
+            .friend-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                margin-right: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+            }
+            .conversation-info,
+            .friend-info {
+                flex: 1;
+            }
+            .conversation-name,
+            .friend-name {
+                font-weight: bold;
+            }
+            .conversation-last-msg {
+                font-size: 14px;
+                color: #666;
+                margin-top: 2px;
+            }
+            .chat-messages {
+                flex: 1;
+                padding: 20px;
+                overflow-y: auto;
+                border-bottom: 1px solid #ddd;
+                padding-top: 10px;
+            }
+            .message {
+                margin-bottom: 15px;
+                display: flex;
+            }
+            .message.sent {
+                justify-content: flex-end;
+            }
+            .message.received {
+                justify-content: flex-start;
+            }
+            .message-content {
+                max-width: 70%;
+                padding: 10px 15px;
+                border-radius: 18px;
+                position: relative;
+            }
+            .message.sent .message-content {
+                background-color: #007bff;
+                color: white;
+            }
+            .message.received .message-content {
+                background-color: #f1f1f1;
+                color: black;
+            }
+            .message-avatar {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                margin: 0 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+            }
+            .chat-input {
+                padding: 20px;
+                display: flex;
+                gap: 10px;
+            }
+            .chat-input input {
+                flex: 1;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 20px;
+                outline: none;
+            }
+            .chat-input button {
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 20px;
+                cursor: pointer;
+            }
+            .chat-input button:hover {
+                background-color: #0056b3;
+            }
+            .emoji-btn {
+                background: none !important;
+                border: none !important;
+                font-size: 20px;
+                padding: 8px !important;
+                border-radius: 50% !important;
+                cursor: pointer;
+            }
+            .emoji-btn:hover {
+                background: rgba(0, 0, 0, 0.05) !important;
+            }
+            .no-chat-selected {
+                padding: 20px;
+                text-align: center;
+                color: #999;
+                font-size: 14px;
+                background-color: #f9f9f9;
+                border-bottom: 1px solid #eee;
+            }
+            .tab-buttons {
+                display: flex;
+                margin-bottom: 20px;
+            }
+            .tab-button {
+                flex: 1;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border: none;
+                cursor: pointer;
+                font-size: 16px;
+            }
+            .tab-button.active {
+                background-color: #007bff;
+                color: white;
+            }
+            .empty-chat {
+                text-align: center;
+                color: #777;
+                padding: 30px 12px;
+                font-size: 14px;
+            }
+            .chat-header {
+                display: flex;
+                align-items: center;
+                padding: 10px 15px;
+                border-bottom: 1px solid #ddd;
+                background-color: #fff;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                height: 60px;
+                flex-shrink: 0;
+                overflow: hidden;
+            }
+            .back-btn {
+                display: none;
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                padding: 5px 10px;
+                margin-right: 10px;
+                flex-shrink: 0;
+            }
+            .chat-header-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                margin-right: 10px;
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .chat-header-name {
+                font-weight: bold;
+                font-size: 16px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                flex: 1;
+            }
+            .chat-header-info {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            .typing-indicator {
+                font-size: 12px;
+                color: #666;
+                font-style: italic;
+            }
+            @media (max-width: 768px) {
+                .chat-sidebar {
+                    width: 100%;
+                    display: block;
+                }
+                .chat-main {
+                    display: none;
+                    width: 100%;
+                }
+                .chat-main.active {
+                    display: flex;
+                }
+                .chat-sidebar.hidden {
+                    display: none;
+                }
+                .back-btn {
+                    display: block;
+                }
+            }
+            @media (min-width: 769px) {
+                .chat-sidebar {
+                    width: 300px;
+                    display: block;
+                }
+                .chat-main {
+                    display: flex;
+                    flex: 1;
+                }
+                .chat-sidebar.hidden {
+                    display: block;
+                }
+                .back-btn {
+                    display: none;
+                }
+            }
+            .message {
+                position: relative;
+                padding-top: 35px;
+            }
+            .message-content {
+                user-select: none;
+                -webkit-user-select: none;
+            }
+            .message-delete-btn {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                background-color: #dc3545;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 6px 12px;
+                font-size: 12px;
+                cursor: pointer;
+                display: none;
+                z-index: 30;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .message.show-delete .message-delete-btn {
+                display: block;
+            }
+            .message-content {
+                cursor: pointer;
+            }
+
+            /* ── Reacciones ── */
+            .message-reactions {
+                display: flex;
+                gap: 4px;
+                flex-wrap: wrap;
+                margin-top: 4px;
+            }
+            .reaction-badge {
+                background: rgba(0, 0, 0, 0.1);
+                border-radius: 12px;
+                padding: 2px 8px;
+                font-size: 13px;
+                cursor: pointer;
+            }
+            .message.sent .reaction-badge {
+                background: rgba(255, 255, 255, 0.25);
+            }
+            .reaction-picker {
+                position: absolute;
+                bottom: 100%;
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+                padding: 6px 10px;
+                display: none;
+                gap: 6px;
+                z-index: 20;
+            }
+            .message:hover .reaction-picker,
+            .message.show-actions .reaction-picker {
+                display: flex;
+            }
+            .reaction-picker span {
+                font-size: 20px;
+                cursor: pointer;
+                transition: transform 0.1s;
+            }
+            .reaction-picker span:hover {
+                transform: scale(1.3);
+            }
+            .reply-btn {
+                font-size: 12px;
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 2px 6px;
+                opacity: 0;
+                transition: opacity 0.2s;
+                align-self: flex-end;
+            }
+            .message:hover .reply-btn,
+            .message.show-actions .reply-btn {
+                opacity: 1;
+            }
+
+            /* Reply preview (dentro del mensaje) */
+            .reply-preview {
+                background: #f0f0f0;
+                border-left: 3px solid #007bff;
+                padding: 6px 10px;
+                border-radius: 8px;
+                margin-bottom: 4px;
+                font-size: 12px;
+                color: #555;
+                max-width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .message.sent .reply-preview {
+                background: rgba(255, 255, 255, 0.25);
+                border-left-color: white;
+                color: rgba(255, 255, 255, 0.8);
+            }
+
+            /* Barra de respuesta encima del input */
+            .reply-bar {
+                display: flex;
+                align-items: center;
+                background: #f8f9fa;
+                border-top: 1px solid #ddd;
+                padding: 8px 15px;
+                font-size: 13px;
+                color: #555;
+            }
+            .reply-bar .reply-text {
+                flex: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .reply-bar .cancel-reply {
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 18px;
+                color: #999;
+            }
+
+            /* Estado de entrega (checks) */
+            .msg-status {
+                font-size: 11px;
+                margin-left: 4px;
+            }
+            .msg-status.sent-check {
+                color: rgba(255, 255, 255, 0.6);
+            }
+            .msg-status.delivered {
+                color: rgba(255, 255, 255, 0.6);
+            }
+            .msg-status.read {
+                color: #34b7f1;
+            }
+
+            /* Barra de búsqueda */
+            .chat-search-bar {
+                display: flex;
+                align-items: center;
+                padding: 8px 15px;
+                background: white;
+                border-bottom: 1px solid #ddd;
+                gap: 8px;
+            }
+            .chat-search-bar input {
+                flex: 1;
+                padding: 6px 12px;
+                border: 1px solid #ddd;
+                border-radius: 20px;
+                outline: none;
+                font-size: 14px;
+            }
+            .search-results-count {
+                font-size: 12px;
+                color: #777;
+                white-space: nowrap;
+            }
+            .search-highlight {
+                background: #fff176;
+                border-radius: 2px;
+            }
+
+            /* Botón archivar */
+            .archive-btn {
+                opacity: 0;
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 16px;
+                padding: 4px;
+                transition: opacity 0.2s;
+                flex-shrink: 0;
+            }
+            .conversation-item:hover .archive-btn {
+                opacity: 1;
+            }
+
+            /* Botón de voz */
+            .voice-btn {
+                padding: 10px 14px;
+                background: #f0f0f0;
+                border: none;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 18px;
+                flex-shrink: 0;
+                transition: background 0.2s;
+                user-select: none;
+                -webkit-user-select: none;
+            }
+            .voice-btn.recording {
+                background: #ff4444;
+                animation: pulse 1s infinite;
+            }
+            @keyframes pulse {
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.1);
+                }
+            }
+            .recording-indicator {
+                display: none;
+                align-items: center;
+                gap: 8px;
+                padding: 10px 15px;
+                background: #fff3f3;
+                border-top: 1px solid #fcc;
+                color: #cc0000;
+                font-size: 14px;
+            }
+            .recording-indicator.active {
+                display: flex;
+            }
+
+            /* Mensajes de audio */
+            .audio-message {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .audio-message audio {
+                height: 36px;
+                max-width: 200px;
+            }
+
+            /* Botón de búsqueda en header */
+            .chat-search-btn {
+                background: none;
+                border: none;
+                font-size: 18px;
+                cursor: pointer;
+                padding: 4px 8px;
+                color: #555;
+                flex-shrink: 0;
+            }
+        </style>
+    </head>
+    <body class="profile-page chat-page">
+        <header class="header">
+            <div class="header-container">
+                <h1 class="header-logo">Sirnergia</h1>
+                <div class="header-search">
+                    <input type="text" placeholder="Buscar en Sirnergia..." />
+                    <button>🔍</button>
+                </div>
+                <div class="header-user">
+                    <div id="headerAvatar" class="profile-avatar-small">👤</div>
+                    <a href="main.html" class="btn-secondary">feed 🏠</a>
+                    <span id="userName"></span>
+                    <button id="logoutBtn" class="btn-logout">
+                        Cerrar sesión
+                    </button>
+                    <button
+                        id="mobileMenuBtn"
+                        class="mobile-menu-btn"
+                        aria-label="Menú móvil"
+                    >
+                        ⋮
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="chat-container">
+                <div class="chat-sidebar">
+                    <div class="tab-buttons">
+                        <button id="conversationsTab" class="tab-button active">
+                            Conversaciones
+                        </button>
+                        <button id="friendsTab" class="tab-button">
+                            Amigos
+                        </button>
+                    </div>
+                    <div id="conversationsList" class="conversations-list">
+                        <!-- Conversaciones se cargarán aquí -->
+                    </div>
+                    <div
+                        id="friendsList"
+                        class="friends-list"
+                        style="display: none"
+                    >
+                        <!-- Amigos se cargarán aquí -->
+                    </div>
+                </div>
+                <div class="chat-main">
+                    <div id="noChatSelected" class="no-chat-selected">
+                        Selecciona una conversación para comenzar a chatear
+                    </div>
+                    <div
+                        id="chatArea"
+                        style="
+                            display: none;
+                            height: 100%;
+                            flex-direction: column;
+                            padding: 0;
+                        "
+                    >
+                        <div id="chatHeader" class="chat-header">
+                            <button
+                                id="backToConversationsBtn"
+                                class="back-btn"
+                            >
+                                ←
+                            </button>
+                            <div
+                                id="chatHeaderAvatar"
+                                class="chat-header-avatar"
+                            ></div>
+                            <div class="chat-header-info">
+                                <div
+                                    id="chatHeaderName"
+                                    class="chat-header-name"
+                                ></div>
+                                <div
+                                    id="typingIndicator"
+                                    class="typing-indicator"
+                                    style="display: none"
+                                >
+                                    escribiendo...
+                                </div>
+                            </div>
+                            <button
+                                id="chatSearchBtn"
+                                class="chat-search-btn"
+                                title="Buscar mensajes"
+                            >
+                                🔍
+                            </button>
+                        </div>
+                        <div
+                            id="chatSearchBar"
+                            class="chat-search-bar"
+                            style="display: none"
+                        >
+                            <input
+                                type="text"
+                                id="chatSearchInput"
+                                placeholder="Buscar en conversación..."
+                            />
+                            <span
+                                id="searchResultsCount"
+                                class="search-results-count"
+                            ></span>
+                            <button
+                                id="closeSearchBtn"
+                                style="
+                                    background: none;
+                                    border: none;
+                                    cursor: pointer;
+                                    font-size: 18px;
+                                "
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <div id="chatMessages" class="chat-messages">
+                            <!-- Mensajes se cargarán aquí -->
+                        </div>
+                        <div
+                            id="replyBar"
+                            class="reply-bar"
+                            style="display: none"
+                        >
+                            <span>↩️ Respondiendo a: </span>
+                            <span id="replyText" class="reply-text"></span>
+                            <button class="cancel-reply" id="cancelReplyBtn">
+                                ✕
+                            </button>
+                        </div>
+                        <div class="chat-input">
+                            <button
+                                id="voiceBtn"
+                                class="voice-btn"
+                                title="Grabar mensaje de voz"
+                            >
+                                🎤
+                            </button>
+                            <button
+                                id="emojiBtn"
+                                class="emoji-btn"
+                                title="Insertar emoji"
+                            >
+                                😊
+                            </button>
+                            <input
+                                type="text"
+                                id="messageInput"
+                                placeholder="Escribe un mensaje..."
+                            />
+                            <button id="sendMessageBtn">Enviar</button>
+                        </div>
+                        <div
+                            id="recordingIndicator"
+                            class="recording-indicator"
+                        >
+                            <span>🔴</span> <span>Grabando...</span>
+                            <span id="recordingTimer">0s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="script.js"></script>
+        <script>
+            let currentUser = null;
+            let currentChatFriend = null;
+            let conversations = [];
+            let friends = [];
+            let currentMessagesSignature = "";
+            let chatRefreshInterval = null;
+            let typingInterval = null;
+            let typingCheckInterval = null;
+            const CHAT_API_BASE_URL =
+                typeof API_BASE_URL !== "undefined"
+                    ? API_BASE_URL
+                    : "http://localhost:5000/api";
+
+            // Variables para nuevas funcionalidades
+            let replyToMessage = null;
+            let isRecording = false;
+            let mediaRecorder = null;
+            let audioChunks = [];
+            let recordingStartTime = null;
+            let recordingTimerInterval = null;
+            let searchDebounceTimer = null;
+
+            // Cargar datos del usuario
+            async function loadUserData() {
+                const token = localStorage.getItem("authToken");
+                if (!token) {
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                try {
+                    const response = await fetch(
+                        `${CHAT_API_BASE_URL}/auth/perfil`,
+                        {
+                            headers: { Authorization: `Bearer ${token}` },
+                            credentials: "include",
+                        },
+                    );
+                    const user = await response.json();
+                    currentUser = user;
+
+                    applyUserNameElement(
+                        document.getElementById("userName"),
+                        user,
+                    );
+                    setAvatarContent(
+                        document.getElementById("headerAvatar"),
+                        user.avatar,
+                        "👤",
+                        "avatar-image",
+                    );
+                } catch (error) {
+                    console.error("Error loading user data:", error);
+                }
+            }
+
+            // Cargar conversaciones
+            async function loadConversations() {
+                const token = localStorage.getItem("authToken");
+                if (!token) {
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                try {
+                    const response = await fetch(
+                        `${CHAT_API_BASE_URL}/chat/conversations`,
+                        {
+                            headers: { Authorization: `Bearer ${token}` },
+                            credentials: "include",
+                        },
+                    );
+
+                    if (response.status === 401) {
+                        console.error("Token inválido, redirigiendo al login");
+                        localStorage.removeItem("authToken");
+                        localStorage.removeItem("userLogged");
+                        window.location.href = "index.html";
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `Error ${response.status}: ${response.statusText}`,
+                        );
+                    }
+
+                    conversations = await response.json();
+                    console.log(
+                        "Conversaciones cargadas:",
+                        conversations.length,
+                    );
+
+                    // Ordenar por mensaje más reciente
+                    if (Array.isArray(conversations)) {
+                        conversations.sort((a, b) => {
+                            const timeA = a.lastMessage
+                                ? new Date(a.lastMessage.createdAt)
+                                : new Date(0);
+                            const timeB = b.lastMessage
+                                ? new Date(b.lastMessage.createdAt)
+                                : new Date(0);
+                            return timeB - timeA;
+                        });
+                        renderConversations();
+                    } else {
+                        console.error(
+                            "Conversations no es un array:",
+                            conversations,
+                        );
+                        conversations = [];
+                        renderConversations();
+                    }
+                } catch (error) {
+                    console.error("Error loading conversations:", error);
+                    conversations = [];
+                    renderConversations();
+                }
+            }
+
+            // Cargar amigos
+            async function loadFriends() {
+                const token = localStorage.getItem("authToken");
+                if (!token) {
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                try {
+                    const response = await fetch(
+                        `${CHAT_API_BASE_URL}/chat/friends`,
+                        {
+                            headers: { Authorization: `Bearer ${token}` },
+                            credentials: "include",
+                        },
+                    );
+
+                    if (response.status === 401) {
+                        console.error("Token inválido, redirigiendo al login");
+                        localStorage.removeItem("authToken");
+                        localStorage.removeItem("userLogged");
+                        window.location.href = "index.html";
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error("No se pudo cargar la lista de amigos");
+                    }
+
+                    const data = await response.json();
+                    friends = Array.isArray(data) ? data : [];
+                    console.log("Amigos cargados:", friends.length);
+                    renderFriends();
+                } catch (error) {
+                    console.error("Error loading friends:", error);
+                    friends = [];
+                    document.getElementById("friendsList").innerHTML =
+                        "<p>No se pudo cargar tu lista de amigos.</p>";
+                }
+            }
+
+            // Renderizar conversaciones
+            function renderConversations() {
+                const container = document.getElementById("conversationsList");
+                container.innerHTML = "";
+
+                if (conversations.length === 0) {
+                    container.innerHTML = "<p>No hay conversaciones aún.</p>";
+                    return;
+                }
+
+                conversations.forEach((conv) => {
+                    const item = document.createElement("div");
+                    item.className = `conversation-item ${currentChatFriend && String(currentChatFriend._id) === String(conv.friend._id) ? "active" : ""}`;
+                    const lastMessageText = conv.lastMessage
+                        ? conv.lastMessage.content
+                        : "Sin mensajes todavia";
+
+                    item.innerHTML = `
+                    <div class="conversation-avatar">${renderAvatarMarkup(conv.friend.avatar, "👤", "avatar-image")}</div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">${renderUserNameMarkup(conv.friend)}</div>
+                        <div class="conversation-last-msg">${escapeHtml(lastMessageText)}</div>
+                    </div>
+                    <button class="archive-btn" title="Archivar conversación">📁</button>
+                `;
+
+                    // Clic en el item (pero no en el botón archivar)
+                    item.addEventListener("click", (e) => {
+                        if (!e.target.classList.contains("archive-btn")) {
+                            openChat(conv.friend, item);
+                        }
+                    });
+
+                    // Botón archivar
+                    const archiveBtn = item.querySelector(".archive-btn");
+                    archiveBtn.addEventListener("click", async (e) => {
+                        e.stopPropagation();
+                        await archiveConversation(conv.friend._id);
+                    });
+
+                    container.appendChild(item);
+                });
+
+                // Botón "Ver archivadas"
+                const archivedBtn = document.createElement("div");
+                archivedBtn.style.cssText =
+                    "text-align:center; margin-top:12px;";
+                archivedBtn.innerHTML = `<button id="viewArchivedBtn" style="background:none;border:none;cursor:pointer;color:#007bff;font-size:13px;">📁 Ver archivadas</button>`;
+                archivedBtn
+                    .querySelector("#viewArchivedBtn")
+                    .addEventListener("click", () => {
+                        alert(
+                            "Las conversaciones archivadas no se muestran en el feed principal. Esta función estará disponible próximamente.",
+                        );
+                    });
+                container.appendChild(archivedBtn);
+            }
+
+            // Renderizar amigos
+            function renderFriends() {
+                const container = document.getElementById("friendsList");
+                container.innerHTML = "";
+
+                if (friends.length === 0) {
+                    container.innerHTML = "<p>No tienes amigos agregados.</p>";
+                    return;
+                }
+
+                friends.forEach((friend) => {
+                    const item = document.createElement("div");
+                    item.className = "friend-item";
+                    item.onclick = () => openChat(friend, item);
+
+                    item.innerHTML = `
+                    <div class="friend-avatar">${renderAvatarMarkup(friend.avatar, "👤", "avatar-image")}</div>
+                    <div class="friend-info">
+                        <div class="friend-name">${renderUserNameMarkup(friend)}</div>
+                        <div class="conversation-last-msg">${escapeHtml(friend.bio || "Amigo agregado")}</div>
+                    </div>
+                `;
+
+                    container.appendChild(item);
+                });
+            }
+
+            async function ensureConversation(friendId) {
+                const token = localStorage.getItem("authToken");
+                const response = await fetch(
+                    `${CHAT_API_BASE_URL}/chat/conversations/${friendId}`,
+                    {
+                        method: "POST",
+                        headers: { Authorization: `Bearer ${token}` },
+                        credentials: "include",
+                    },
+                );
+
+                if (!response.ok) {
+                    throw new Error("No se pudo crear la conversacion");
+                }
+
+                return response.json();
+            }
+
+            // Abrir chat con un amigo
+            async function openChat(friend, selectedItem = null) {
+                if (
+                    !currentChatFriend ||
+                    String(currentChatFriend._id) !== String(friend._id)
+                ) {
+                    currentMessagesSignature = "";
+                }
+                currentChatFriend = friend;
+
+                // Marcar como activo
+                document
+                    .querySelectorAll(".conversation-item, .friend-item")
+                    .forEach((item) => {
+                        item.classList.remove("active");
+                    });
+                if (selectedItem) {
+                    selectedItem.classList.add("active");
+                }
+
+                // Mostrar área de chat
+                document.getElementById("noChatSelected").style.display =
+                    "none";
+                document.getElementById("chatArea").style.display = "flex";
+
+                // En móvil, ocultar sidebar y mostrar chat
+                if (window.innerWidth <= 768) {
+                    document
+                        .querySelector(".chat-sidebar")
+                        .classList.add("hidden");
+                    document
+                        .querySelector(".chat-main")
+                        .classList.add("active");
+                }
+
+                // Actualizar header del chat
+                const headerAvatar =
+                    document.getElementById("chatHeaderAvatar");
+                const headerName = document.getElementById("chatHeaderName");
+                headerAvatar.innerHTML = renderAvatarMarkup(
+                    friend.avatar,
+                    "👤",
+                    "avatar-image",
+                    friend.isOnline,
+                );
+                headerName.textContent = `${friend.firstName} ${friend.lastName}`;
+
+                try {
+                    await ensureConversation(friend._id);
+                    await loadMessages(friend._id);
+                    await loadConversations();
+                    startTypingCheck();
+                } catch (error) {
+                    console.error("Error opening chat:", error);
+                }
+            }
+
+            // Volver a la lista de conversaciones (móvil)
+            document.getElementById("backToConversationsBtn").onclick =
+                function () {
+                    document
+                        .querySelector(".chat-sidebar")
+                        .classList.remove("hidden");
+                    document
+                        .querySelector(".chat-main")
+                        .classList.remove("active");
+                    currentChatFriend = null;
+                    document.getElementById("chatArea").style.display = "none";
+                    document.getElementById("noChatSelected").style.display =
+                        "block";
+                    stopTypingCheck();
+                };
+
+            // Verificar si el otro usuario está escribiendo
+            function startTypingCheck() {
+                stopTypingCheck();
+                typingCheckInterval = setInterval(async () => {
+                    if (!currentChatFriend) return;
+
+                    const token = localStorage.getItem("authToken");
+                    try {
+                        const response = await fetch(
+                            `${CHAT_API_BASE_URL}/chat/typing/${currentChatFriend._id}`,
+                            {
+                                headers: { Authorization: `Bearer ${token}` },
+                                credentials: "include",
+                            },
+                        );
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            const typingIndicator =
+                                document.getElementById("typingIndicator");
+                            typingIndicator.style.display = data.isTyping
+                                ? "block"
+                                : "none";
+                        }
+                    } catch (error) {
+                        console.error("Error checking typing status:", error);
+                    }
+                }, 2000);
+            }
+
+            function stopTypingCheck() {
+                if (typingCheckInterval) {
+                    clearInterval(typingCheckInterval);
+                    typingCheckInterval = null;
+                }
+                if (typingInterval) {
+                    clearTimeout(typingInterval);
+                    typingInterval = null;
+                }
+            }
+
+            // Enviar estado de typing cuando el usuario escribe
+            function sendTypingStatus() {
+                if (!currentChatFriend) return;
+
+                const token = localStorage.getItem("authToken");
+                fetch(
+                    `${CHAT_API_BASE_URL}/chat/typing/${currentChatFriend._id}`,
+                    {
+                        method: "POST",
+                        headers: { Authorization: `Bearer ${token}` },
+                        credentials: "include",
+                    },
+                ).catch((error) =>
+                    console.error("Error sending typing status:", error),
+                );
+            }
+
+            // Cargar mensajes de una conversación
+            async function loadMessages(friendId) {
+                const token = localStorage.getItem("authToken");
+                try {
+                    const response = await fetch(
+                        `${CHAT_API_BASE_URL}/chat/conversations/${friendId}`,
+                        {
+                            headers: { Authorization: `Bearer ${token}` },
+                            credentials: "include",
+                        },
+                    );
+                    const messages = await response.json();
+                    const signature = messages
+                        .map(
+                            (message) =>
+                                `${message._id}:${message.content}:${message.createdAt}:${JSON.stringify(message.reactions || [])}`,
+                        )
+                        .join("|");
+                    if (signature !== currentMessagesSignature) {
+                        currentMessagesSignature = signature;
+                        renderMessages(messages);
+                        markMessagesAsRead(messages);
+                    }
+                } catch (error) {
+                    console.error("Error loading messages:", error);
+                }
+            }
+
+            // Marcar mensajes recibidos como leídos
+            async function markMessagesAsRead(messages) {
+                if (!currentUser) return;
+                const token = localStorage.getItem("authToken");
+                const unread = messages.filter(
+                    (m) =>
+                        m.sender &&
+                        String(m.sender._id) !== String(currentUser._id) &&
+                        !m.read,
+                );
+                for (const msg of unread) {
+                    try {
+                        await fetch(
+                            `${CHAT_API_BASE_URL}/chat/messages/${msg._id}/read`,
+                            {
+                                method: "POST",
+                                headers: { Authorization: `Bearer ${token}` },
+                                credentials: "include",
+                            },
+                        );
+                    } catch (err) {
+                        console.error("Error marking message as read:", err);
+                    }
+                }
+            }
+
+            // Renderizar mensajes
+            function renderMessages(messages) {
+                const container = document.getElementById("chatMessages");
+                container.innerHTML = "";
+
+                if (!messages.length) {
+                    container.innerHTML =
+                        '<div class="empty-chat">Todavia no hay mensajes. Escribe el primero para iniciar el chat.</div>';
+                    return;
+                }
+
+                messages.forEach((msg) => {
+                    const isSent = msg.sender._id === currentUser._id;
+                    const messageDiv = document.createElement("div");
+                    messageDiv.className = `message ${isSent ? "sent" : "received"}`;
+
+                    // ── Estado de entrega (solo mensajes enviados) ──
+                    let statusHtml = "";
+                    if (isSent) {
+                        if (msg.read) {
+                            statusHtml =
+                                '<span class="msg-status read" title="Leído">✓✓</span>';
+                        } else if (msg.delivered) {
+                            statusHtml =
+                                '<span class="msg-status delivered" title="Entregado">✓✓</span>';
+                        } else {
+                            statusHtml =
+                                '<span class="msg-status sent-check" title="Enviado">✓</span>';
+                        }
+                    }
+
+                    // ── Reply preview (si el mensaje es respuesta a otro) ──
+                    let replyPreviewHtml = "";
+                    if (msg.replyTo && msg.replyTo.content) {
+                        replyPreviewHtml = `<div class="reply-preview">↩️ ${escapeHtml(msg.replyTo.content.substring(0, 80))}${msg.replyTo.content.length > 80 ? "…" : ""}</div>`;
+                    }
+
+                    // ── Contenido del mensaje (texto o audio) ──
+                    let contentInner = "";
+                    const audioAttachment =
+                        msg.attachments &&
+                        msg.attachments.find((a) => a.type === "audio");
+                    if (audioAttachment) {
+                        contentInner = `<div class="audio-message">🎤 <audio controls src="${audioAttachment.url}"></audio></div>`;
+                    } else {
+                        contentInner = escapeHtml(msg.content || "");
+                    }
+
+                    // ── Reacciones ──
+                    let reactionsHtml = "";
+                    if (msg.reactions && msg.reactions.length > 0) {
+                        const reactionMap = {};
+                        msg.reactions.forEach((r) => {
+                            reactionMap[r.emoji] =
+                                (reactionMap[r.emoji] || 0) + 1;
+                        });
+                        reactionsHtml =
+                            '<div class="message-reactions">' +
+                            Object.entries(reactionMap)
+                                .map(
+                                    ([emoji, count]) =>
+                                        `<span class="reaction-badge" data-emoji="${emoji}">${emoji} ${count}</span>`,
+                                )
+                                .join("") +
+                            "</div>";
+                    }
+
+                    // ── Picker de reacciones + botón responder ──
+                    const REACTION_EMOJIS = [
+                        "❤️",
+                        "👍",
+                        "😂",
+                        "😮",
+                        "😢",
+                        "😡",
+                    ];
+                    const pickerSpans = REACTION_EMOJIS.map(
+                        (e) => `<span data-emoji="${e}">${e}</span>`,
+                    ).join("");
+                    const reactionPickerHtml = `<div class="reaction-picker">${pickerSpans}</div>`;
+                    const replyBtnHtml = `<button class="reply-btn" title="Responder">↩️ Responder</button>`;
+
+                    messageDiv.innerHTML = `
+                    ${!isSent ? `<a href="profile.html?id=${msg.sender._id}" class="message-avatar-link" onclick="event.stopPropagation()"><div class="message-avatar">${renderAvatarMarkup(msg.sender.avatar, "👤", "avatar-image")}</div></a>` : ""}
+                    <button class="message-delete-btn" data-message-id="${msg._id}">🗑️</button>
+                    ${reactionPickerHtml}
+                    <div class="message-content">
+                        ${replyPreviewHtml}
+                        ${contentInner}
+                        ${statusHtml}
+                        ${reactionsHtml}
+                    </div>
+                    ${replyBtnHtml}
+                    ${isSent ? `<a href="profile.html?id=${msg.sender._id}" class="message-avatar-link" onclick="event.stopPropagation()"><div class="message-avatar">${renderAvatarMarkup(msg.sender.avatar, "👤", "avatar-image")}</div></a>` : ""}
+                `;
+
+                    // ── Reaction picker: clic en emoji ──
+                    messageDiv
+                        .querySelectorAll(".reaction-picker span")
+                        .forEach((span) => {
+                            span.addEventListener("click", async (e) => {
+                                e.stopPropagation();
+                                await reactToMessage(
+                                    msg._id,
+                                    span.dataset.emoji,
+                                );
+                            });
+                        });
+
+                    // ── Botón responder ──
+                    messageDiv
+                        .querySelector(".reply-btn")
+                        .addEventListener("click", (e) => {
+                            e.stopPropagation();
+                            setReplyTo(msg);
+                        });
+
+                    // ── Click para mostrar/ocultar botón de borrar ──
+                    const contentDiv =
+                        messageDiv.querySelector(".message-content");
+
+                    contentDiv.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        // Ocultar otros show-delete
+                        document
+                            .querySelectorAll(".message.show-delete")
+                            .forEach((m) =>
+                                m.classList.remove("show-delete"),
+                            );
+                        // Toggle show-delete en este mensaje
+                        messageDiv.classList.toggle("show-delete");
+                    });
+
+                    const deleteBtn = messageDiv.querySelector(
+                        ".message-delete-btn",
+                    );
+                    deleteBtn.addEventListener("click", async (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        await deleteMessage(msg._id);
+                    });
+
+                    container.appendChild(messageDiv);
+                });
+
+                // Ocultar botón de borrar al hacer clic en otra parte del chat
+                container.addEventListener("click", (e) => {
+                    if (!e.target.closest(".message-delete-btn")) {
+                        document
+                            .querySelectorAll(".message.show-delete")
+                            .forEach((m) => m.classList.remove("show-delete"));
+                    }
+                });
+
+                // Scroll al final
+                container.scrollTop = container.scrollHeight;
+            }
+
+            // Eliminar mensaje (soft delete solo para el usuario que lo borra)
+            async function deleteMessage(messageId) {
+                const token = localStorage.getItem("authToken");
+                try {
+                    const response = await fetch(
+                        `${CHAT_API_BASE_URL}/chat/messages/${messageId}`,
+                        {
+                            method: "DELETE",
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                "Content-Type": "application/json",
+                            },
+                            credentials: "include",
+                        },
+                    );
+
+                    if (response.ok) {
+                        currentMessagesSignature = "";
+                        await loadMessages(currentChatFriend._id);
+                    } else {
+                        const errorData = await response
+                            .json()
+                            .catch(() => ({}));
+                        alert(
+                            errorData.error || "No se pudo eliminar el mensaje",
+                        );
+                    }
+                } catch (error) {
+                    console.error("Error deleting message:", error);
+                    alert("Error al eliminar el mensaje");
+                }
+            }
+
+            // Enviar mensaje
+            async function sendMessage() {
+                const input = document.getElementById("messageInput");
+                const content = input.value.trim();
+
+                if (!content || !currentChatFriend) return;
+
+                const token = localStorage.getItem("authToken");
+                try {
+                    let url = `${CHAT_API_BASE_URL}/chat/messages`;
+                    let body = { receiverId: currentChatFriend._id, content };
+
+                    // Si hay un mensaje al que se responde, usar endpoint de reply
+                    if (replyToMessage) {
+                        url = `${CHAT_API_BASE_URL}/chat/messages/${replyToMessage._id}/reply`;
+                        body = { content };
+                    }
+
+                    const response = await fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        credentials: "include",
+                        body: JSON.stringify(body),
+                    });
+
+                    if (response.ok) {
+                        input.value = "";
+                        clearReplyTo();
+                        currentMessagesSignature = "";
+                        await loadMessages(currentChatFriend._id);
+                        await loadConversations();
+                    }
+                } catch (error) {
+                    console.error("Error sending message:", error);
+                }
+            }
+
+            // ── Reacciones ──
+            async function reactToMessage(messageId, emoji) {
+                if (!currentChatFriend) return;
+                const token = localStorage.getItem("authToken");
+                try {
+                    const response = await fetch(
+                        `${CHAT_API_BASE_URL}/chat/messages/${messageId}/react`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                            credentials: "include",
+                            body: JSON.stringify({ emoji }),
+                        },
+                    );
+                    if (response.ok) {
+                        currentMessagesSignature = "";
+                        await loadMessages(currentChatFriend._id);
+                    }
+                } catch (err) {
+                    console.error("Error reacting to message:", err);
+                }
+            }
+
+            // ── Respuestas ──
+            function setReplyTo(msg) {
+                replyToMessage = msg;
+                document.getElementById("replyText").textContent =
+                    msg.content || "(mensaje de voz)";
+                document.getElementById("replyBar").style.display = "flex";
+                document.getElementById("messageInput").focus();
+            }
+
+            function clearReplyTo() {
+                replyToMessage = null;
+                document.getElementById("replyBar").style.display = "none";
+                document.getElementById("replyText").textContent = "";
+            }
+
+            // ── Archivar conversación ──
+            async function archiveConversation(friendId) {
+                const token = localStorage.getItem("authToken");
+                try {
+                    const response = await fetch(
+                        `${CHAT_API_BASE_URL}/chat/conversations/${friendId}/archive`,
+                        {
+                            method: "POST",
+                            headers: { Authorization: `Bearer ${token}` },
+                            credentials: "include",
+                        },
+                    );
+                    if (response.ok) {
+                        // Si la conv archivada era la activa, cerrar el chat
+                        if (
+                            currentChatFriend &&
+                            String(currentChatFriend._id) === String(friendId)
+                        ) {
+                            currentChatFriend = null;
+                            document.getElementById("chatArea").style.display =
+                                "none";
+                            document.getElementById(
+                                "noChatSelected",
+                            ).style.display = "block";
+                            stopTypingCheck();
+                        }
+                        await loadConversations();
+                    } else {
+                        const err = await response.json().catch(() => ({}));
+                        alert(
+                            err.error || "No se pudo archivar la conversación",
+                        );
+                    }
+                } catch (error) {
+                    console.error("Error archiving conversation:", error);
+                }
+            }
+
+            // ── Búsqueda en conversación ──
+            async function searchInConversation(query) {
+                if (!currentChatFriend || !query.trim()) {
+                    document.getElementById("searchResultsCount").textContent =
+                        "";
+                    await loadMessages(currentChatFriend._id);
+                    return;
+                }
+                const token = localStorage.getItem("authToken");
+                try {
+                    const response = await fetch(
+                        `${CHAT_API_BASE_URL}/chat/conversations/${currentChatFriend._id}/search?q=${encodeURIComponent(query)}`,
+                        {
+                            headers: { Authorization: `Bearer ${token}` },
+                            credentials: "include",
+                        },
+                    );
+                    if (!response.ok) throw new Error("Error en búsqueda");
+                    const results = await response.json();
+                    renderSearchResults(results, query);
+                } catch (err) {
+                    console.error("Error searching:", err);
+                }
+            }
+
+            function renderSearchResults(messages, query) {
+                const container = document.getElementById("chatMessages");
+                const countEl = document.getElementById("searchResultsCount");
+                container.innerHTML = "";
+
+                if (!messages.length) {
+                    countEl.textContent = "Sin resultados";
+                    container.innerHTML =
+                        '<div class="empty-chat">No se encontraron mensajes con ese texto.</div>';
+                    return;
+                }
+
+                countEl.textContent = `${messages.length} resultado${messages.length !== 1 ? "s" : ""}`;
+
+                const escapedQuery = query.replace(
+                    /[.*+?^${}()|[\]\\]/g,
+                    "\\$&",
+                );
+                const regex = new RegExp(`(${escapedQuery})`, "gi");
+
+                messages.forEach((msg) => {
+                    const isSent = msg.sender._id === currentUser._id;
+                    const messageDiv = document.createElement("div");
+                    messageDiv.className = `message ${isSent ? "sent" : "received"}`;
+
+                    const highlightedContent = escapeHtml(
+                        msg.content || "",
+                    ).replace(
+                        new RegExp(
+                            `(${escapeHtml(query).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+                            "gi",
+                        ),
+                        '<mark class="search-highlight">$1</mark>',
+                    );
+
+                    messageDiv.innerHTML = `
+                    ${!isSent ? `<div class="message-avatar">${renderAvatarMarkup(msg.sender.avatar, "👤", "avatar-image")}</div>` : ""}
+                    <div class="message-content">${highlightedContent}</div>
+                    ${isSent ? `<div class="message-avatar">${renderAvatarMarkup(msg.sender.avatar, "👤", "avatar-image")}</div>` : ""}
+                `;
+                    container.appendChild(messageDiv);
+                });
+                container.scrollTop = container.scrollHeight;
+            }
+
+            // ── Mensajes de voz ──
+            async function startVoiceRecording() {
+                if (
+                    !navigator.mediaDevices ||
+                    !navigator.mediaDevices.getUserMedia
+                ) {
+                    alert("Tu navegador no soporta grabación de audio.");
+                    return;
+                }
+                if (typeof MediaRecorder === "undefined") {
+                    alert(
+                        "Tu navegador no soporta MediaRecorder. Prueba con Chrome o Firefox.",
+                    );
+                    return;
+                }
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                    });
+                    audioChunks = [];
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) audioChunks.push(e.data);
+                    };
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordingStartTime = Date.now();
+
+                    const voiceBtn = document.getElementById("voiceBtn");
+                    const indicator =
+                        document.getElementById("recordingIndicator");
+                    const timerEl = document.getElementById("recordingTimer");
+                    voiceBtn.classList.add("recording");
+                    indicator.classList.add("active");
+
+                    recordingTimerInterval = setInterval(() => {
+                        const secs = Math.floor(
+                            (Date.now() - recordingStartTime) / 1000,
+                        );
+                        timerEl.textContent = `${secs}s`;
+                    }, 1000);
+                } catch (err) {
+                    console.error("Error al acceder al micrófono:", err);
+                    alert(
+                        "No se pudo acceder al micrófono. Verifica los permisos del navegador.",
+                    );
+                }
+            }
+
+            async function stopVoiceRecording() {
+                if (!isRecording || !mediaRecorder) return;
+
+                const duration = Math.floor(
+                    (Date.now() - recordingStartTime) / 1000,
+                );
+                clearInterval(recordingTimerInterval);
+                recordingTimerInterval = null;
+
+                const voiceBtn = document.getElementById("voiceBtn");
+                const indicator = document.getElementById("recordingIndicator");
+                voiceBtn.classList.remove("recording");
+                indicator.classList.remove("active");
+                document.getElementById("recordingTimer").textContent = "0s";
+
+                isRecording = false;
+
+                await new Promise((resolve) => {
+                    mediaRecorder.onstop = resolve;
+                    mediaRecorder.stop();
+                    // Detener todas las pistas del stream
+                    mediaRecorder.stream
+                        .getTracks()
+                        .forEach((track) => track.stop());
+                });
+
+                if (audioChunks.length === 0 || duration < 1) return;
+
+                const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                const reader = new FileReader();
+                reader.onloadend = async () => {
+                    const base64Audio = reader.result;
+                    await sendVoiceMessage(base64Audio, duration);
+                };
+                reader.readAsDataURL(audioBlob);
+            }
+
+            async function sendVoiceMessage(audioData, duration) {
+                if (!currentChatFriend) return;
+                const token = localStorage.getItem("authToken");
+                try {
+                    const response = await fetch(
+                        `${CHAT_API_BASE_URL}/chat/messages/voice`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                            credentials: "include",
+                            body: JSON.stringify({
+                                receiverId: currentChatFriend._id,
+                                audioData,
+                                duration,
+                            }),
+                        },
+                    );
+                    if (response.ok) {
+                        currentMessagesSignature = "";
+                        await loadMessages(currentChatFriend._id);
+                        await loadConversations();
+                    } else {
+                        const err = await response.json().catch(() => ({}));
+                        alert(
+                            err.error || "No se pudo enviar el mensaje de voz",
+                        );
+                    }
+                } catch (err) {
+                    console.error("Error sending voice message:", err);
+                    alert("Error al enviar el mensaje de voz.");
+                }
+            }
+
+            // Manejar tabs
+            document.getElementById("conversationsTab").onclick = function () {
+                document
+                    .getElementById("conversationsTab")
+                    .classList.add("active");
+                document
+                    .getElementById("friendsTab")
+                    .classList.remove("active");
+                document.getElementById("conversationsList").style.display =
+                    "block";
+                document.getElementById("friendsList").style.display = "none";
+                loadConversations();
+            };
+
+            document.getElementById("friendsTab").onclick = function () {
+                document.getElementById("friendsTab").classList.add("active");
+                document
+                    .getElementById("conversationsTab")
+                    .classList.remove("active");
+                document.getElementById("friendsList").style.display = "block";
+                document.getElementById("conversationsList").style.display =
+                    "none";
+                loadFriends();
+            };
+
+            // ── Eventos principales ──
+            document.getElementById("sendMessageBtn").onclick = sendMessage;
+            document.getElementById("messageInput").onkeypress = function (e) {
+                if (e.key === "Enter") sendMessage();
+            };
+            document
+                .getElementById("messageInput")
+                .addEventListener("input", sendTypingStatus);
+
+            // ── Emoji picker en chat ──
+            const emojiBtn = document.getElementById("emojiBtn");
+            const messageInput = document.getElementById("messageInput");
+            const chatInput = document.querySelector(".chat-input");
+            
+            if (emojiBtn && messageInput && chatInput) {
+                const emojis = ["😀", "😂", "😍", "🥰", "😎", "🤔", "😢", "😡", "👍", "👎", "❤️", "💔", "🔥", "⭐", "🎉", "🎊", "💯", "✨", "🙌", "👏", "🤝", "💪", "👀", "🙏", "😊", "😋", "🤗", "😴", "🤯", "😱", "🥳", "😇"];
+                
+                let picker = document.createElement("div");
+                picker.className = "emoji-picker hidden";
+                emojis.forEach(emoji => {
+                    const btn = document.createElement("button");
+                    btn.textContent = emoji;
+                    btn.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        messageInput.value += emoji;
+                        picker.classList.add("hidden");
+                        messageInput.focus();
+                    });
+                    picker.appendChild(btn);
+                });
+                
+                chatInput.style.position = "relative";
+                chatInput.appendChild(picker);
+                
+                emojiBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    picker.classList.toggle("hidden");
+                });
+                
+                document.addEventListener("click", (e) => {
+                    if (!emojiBtn.contains(e.target) && !picker.contains(e.target)) {
+                        picker.classList.add("hidden");
+                    }
+                });
+            }
+
+            document.getElementById("logoutBtn").onclick = function () {
+                localStorage.removeItem("authToken");
+                localStorage.removeItem("userLogged");
+                window.location.href = "index.html";
+            };
+
+            // ── Cancelar respuesta ──
+            document
+                .getElementById("cancelReplyBtn")
+                .addEventListener("click", clearReplyTo);
+
+            // ── Búsqueda en chat ──
+            document
+                .getElementById("chatSearchBtn")
+                .addEventListener("click", () => {
+                    document.getElementById("chatSearchBar").style.display =
+                        "flex";
+                    document.getElementById("chatSearchInput").focus();
+                });
+
+            document
+                .getElementById("closeSearchBtn")
+                .addEventListener("click", () => {
+                    document.getElementById("chatSearchBar").style.display =
+                        "none";
+                    document.getElementById("chatSearchInput").value = "";
+                    document.getElementById("searchResultsCount").textContent =
+                        "";
+                    if (currentChatFriend) {
+                        currentMessagesSignature = "";
+                        loadMessages(currentChatFriend._id);
+                    }
+                });
+
+            document
+                .getElementById("chatSearchInput")
+                .addEventListener("input", (e) => {
+                    clearTimeout(searchDebounceTimer);
+                    const q = e.target.value.trim();
+                    searchDebounceTimer = setTimeout(() => {
+                        if (q) {
+                            searchInConversation(q);
+                        } else {
+                            document.getElementById(
+                                "searchResultsCount",
+                            ).textContent = "";
+                            if (currentChatFriend) {
+                                currentMessagesSignature = "";
+                                loadMessages(currentChatFriend._id);
+                            }
+                        }
+                    }, 500);
+                });
+
+            // ── Mensajes de voz ──
+            const voiceBtn = document.getElementById("voiceBtn");
+
+            voiceBtn.addEventListener("mousedown", (e) => {
+                e.preventDefault();
+                startVoiceRecording();
+            });
+            voiceBtn.addEventListener("mouseup", (e) => {
+                e.preventDefault();
+                stopVoiceRecording();
+            });
+            voiceBtn.addEventListener("mouseleave", () => {
+                if (isRecording) stopVoiceRecording();
+            });
+            voiceBtn.addEventListener(
+                "touchstart",
+                (e) => {
+                    e.preventDefault();
+                    startVoiceRecording();
+                },
+                { passive: false },
+            );
+            voiceBtn.addEventListener(
+                "touchend",
+                (e) => {
+                    e.preventDefault();
+                    stopVoiceRecording();
+                },
+                { passive: false },
+            );
+
+            // Cerrar show-actions al hacer clic fuera
+            document.addEventListener("click", (e) => {
+                if (!e.target.closest(".message")) {
+                    document
+                        .querySelectorAll(".message.show-actions")
+                        .forEach((m) => m.classList.remove("show-actions"));
+                }
+            });
+
+            function startChatAutoRefresh() {
+                if (chatRefreshInterval) {
+                    return;
+                }
+
+                chatRefreshInterval = setInterval(() => {
+                    if (document.hidden) {
+                        return;
+                    }
+
+                    loadConversations();
+                    if (currentChatFriend) {
+                        loadMessages(currentChatFriend._id);
+                    }
+                }, 3000);
+            }
+
+            // Inicializar
+            loadUserData();
+            loadConversations();
+            loadFriends();
+            startChatAutoRefresh();
+        </script>
+    </body>
+</html>
