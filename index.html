@@ -107,7 +107,8 @@
         window.addEventListener('load', async () => {
             try {
                 // Obtener el Client ID desde el servidor
-                const cfg = await fetch('/api/config/public').then(r => r.json());
+                const API_BASE = window.API_BASE_URL || 'https://mi-proyecto-1-hbxf.onrender.com/api';
+                const cfg = await fetch(`${API_BASE}/config/public`).then(r => r.json());
                 const clientId = cfg.googleClientId;
                 if (!clientId) return; // Google OAuth no configurado, ocultar botones
 
@@ -145,7 +146,7 @@
 
         async function handleGoogleCredential(response) {
             try {
-                const API_BASE = window.API_BASE_URL || '/api';
+                const API_BASE = window.API_BASE_URL || 'https://mi-proyecto-1-hbxf.onrender.com/api';
                 const res = await fetch(`${API_BASE}/auth/google`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

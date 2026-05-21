@@ -1,6 +1,6 @@
 // ===== CONFIGURACIÃ“N GLOBAL =====
 
-const API_BASE_URL = `${window.location.origin}/api`;
+const API_BASE_URL = window.API_BASE_URL || "https://mi-proyecto-1-hbxf.onrender.com/api";
 const API_ORIGIN = API_BASE_URL.replace(/\/api$/, "");
 let postsAutoRefreshId = null;
 
@@ -3369,7 +3369,7 @@ async function handleLogout() {
   try {
     const token = localStorage.getItem("authToken");
     if (token) {
-      await fetch("/api/auth/logout", {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -3399,7 +3399,7 @@ function startHeartbeat() {
     const token = localStorage.getItem("authToken");
     if (token) {
       try {
-        await fetch("/api/auth/heartbeat", {
+        await fetch(`${API_BASE_URL}/auth/heartbeat`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
