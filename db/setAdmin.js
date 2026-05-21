@@ -16,7 +16,7 @@ if (!email) {
 
 async function setAdmin() {
     try {
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/sirnergia');
+        await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/sirnergia');
 
         const user = await User.findOneAndUpdate(
             { email: email.toLowerCase() },

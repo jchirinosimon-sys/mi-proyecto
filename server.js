@@ -55,7 +55,7 @@ app.get("/quick", (req, res) => res.send("ok"));
 
 // Conexión a MongoDB
 mongoose
-  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/sirnergia")
+  .connect(process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://localhost:27017/sirnergia")
   .then(async () => {
     console.log("✓ Conectado a MongoDB");
     try {
@@ -138,11 +138,11 @@ process.on("uncaughtException", (err) => {
 
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;
-const HOST = process.env.HOST || "localhost";
+const HOST = process.env.HOST || "0.0.0.0";
 const server = app.listen(PORT, HOST, () => {
   console.log(`🚀 Servidor ejecutándose en http://${HOST}:${PORT}`);
   console.log(`🌐 En esta computadora: http://localhost:${PORT}`);
-  console.log(`📊 Base de datos: ${process.env.MONGODB_URI}`);
+  console.log(`📊 Base de datos: ${process.env.MONGODB_URI || process.env.MONGO_URI}`);
 });
 
 // Graceful shutdown handlers to log SIGTERM/SIGINT and disconnect MongoDB
