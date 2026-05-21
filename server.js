@@ -21,10 +21,7 @@ app.use((req, res, next) => {
     console.log(
       `[REQ] ${new Date().toISOString()} ${req.method} ${req.originalUrl}`,
     );
-    console.log("Headers:", JSON.stringify(req.headers));
-    if (req.body && Object.keys(req.body).length) {
-      console.log("Body:", JSON.stringify(req.body));
-    }
+    console.log("Origin:", req.headers.origin || "sin origin");
     res.on("finish", () => {
       console.log(
         `[RES] ${new Date().toISOString()} ${req.method} ${req.originalUrl} -> ${res.statusCode}`,
