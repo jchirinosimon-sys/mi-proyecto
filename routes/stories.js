@@ -6,6 +6,7 @@ const Story = require('../models/Story');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const { isAdminUser } = require('../utils/admin');
+const { uploadFileBuffer, deleteCloudinaryAsset } = require('../utils/cloudinary');
 const userPublicFields = require('../utils/userPublicFields');
 
 const router = express.Router();
@@ -15,16 +16,8 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, `story-${uniqueSuffix}${path.extname(file.originalname)}`);
-    }
-});
-
 const upload = multer({
-    storage,
+    storage: multer.memoryStorage(),
     limits: { fileSize: 25 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowedTypes = /jpeg|jpg|png|gif|webp|mp4|webm|mov/;
@@ -65,9 +58,11 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
             return res.status(400).json({ error: 'Selecciona una foto o video' });
         }
 
+        const uploadedMedia = await uploadFileBuffer(req.file, 'sinergia/stories');
+
         const story = new Story({
             userId: req.userId,
-            media: `/uploads/${req.file.filename}`,
+            media: uploadedMedia.secure_url,
             mediaType: req.file.mimetype.startsWith('video/') ? 'video' : 'image',
             text: String(req.body.text || '').trim()
         });
@@ -142,8 +137,12 @@ router.delete('/:id', auth, async (req, res) => {
             return res.status(403).json({ error: 'No tienes permiso para eliminar esta historia' });
         }
         // Borrar archivo físico
-        const filePath = path.join(__dirname, '..', story.media);
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        if (/^https?:\/\//i.test(story.media)) {
+            await deleteCloudinaryAsset(story.media);
+        } else {
+            const filePath = path.join(__dirname, '..', story.media);
+            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        }
         await Story.findByIdAndDelete(req.params.id);
         res.json({ message: 'Historia eliminada' });
     } catch (error) {

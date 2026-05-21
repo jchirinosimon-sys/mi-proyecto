@@ -8,6 +8,7 @@ const Post = require("../models/Post");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
 const { isAdminUser } = require("../utils/admin");
+const { uploadFileBuffer, deleteCloudinaryAsset } = require("../utils/cloudinary");
 const userPublicFields = require("../utils/userPublicFields");
 
 const router = express.Router();
@@ -31,18 +32,8 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  },
-});
-
 const upload = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB para videos
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp|mp4|webm|mov|avi/;
@@ -68,9 +59,14 @@ async function getPopulatedPost(postId) {
     });
 }
 
-function deletePostPhotos(photoPaths = []) {
-  photoPaths.forEach((photoPath) => {
+async function deletePostPhotos(photoPaths = []) {
+  await Promise.all(photoPaths.map(async (photoPath) => {
     if (!photoPath) {
+      return;
+    }
+
+    if (/^https?:\/\//i.test(photoPath)) {
+      await deleteCloudinaryAsset(photoPath);
       return;
     }
 
@@ -80,7 +76,7 @@ function deletePostPhotos(photoPaths = []) {
     if (fs.existsSync(absolutePath)) {
       fs.unlinkSync(absolutePath);
     }
-  });
+  }));
 }
 
 /**
@@ -295,9 +291,13 @@ router.post("/", auth, upload.array("photos", 5), async (req, res) => {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
-    // Procesar las fotos subidas
     const photos = req.files
-      ? req.files.map((file) => `/uploads/${file.filename}`)
+      ? await Promise.all(
+          req.files.map(async (file) => {
+            const result = await uploadFileBuffer(file, "sinergia/posts");
+            return result.secure_url;
+          }),
+        )
       : [];
 
     // Extraer hashtags del contenido
@@ -386,7 +386,7 @@ router.delete("/:postId", auth, async (req, res) => {
         .json({ error: "No tienes permisos para eliminar este post" });
     }
 
-    deletePostPhotos(post.photos);
+    await deletePostPhotos(post.photos);
     await Post.findByIdAndDelete(req.params.postId);
 
     res.json({ message: "Post eliminado exitosamente" });

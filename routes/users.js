@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
+const { uploadFileBuffer, deleteCloudinaryAsset } = require("../utils/cloudinary");
 const userPublicFields = require("../utils/userPublicFields");
 
 const router = express.Router();
@@ -13,18 +14,8 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `avatar-${uniqueSuffix}${path.extname(file.originalname)}`);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
@@ -41,8 +32,17 @@ const upload = multer({
   },
 });
 
-function deleteAvatarFile(avatarPath) {
-  if (!avatarPath || !avatarPath.startsWith("/uploads/")) {
+async function deleteAvatarFile(avatarPath) {
+  if (!avatarPath) {
+    return;
+  }
+
+  if (/^https?:\/\//i.test(avatarPath)) {
+    await deleteCloudinaryAsset(avatarPath);
+    return;
+  }
+
+  if (!avatarPath.startsWith("/uploads/")) {
     return;
   }
 
@@ -139,8 +139,9 @@ router.put("/:userId", auth, upload.single("avatar"), async (req, res) => {
     if (typeof bio === "string") user.bio = bio;
 
     if (req.file) {
-      deleteAvatarFile(user.avatar);
-      user.avatar = `/uploads/${req.file.filename}`;
+      await deleteAvatarFile(user.avatar);
+      const uploadedAvatar = await uploadFileBuffer(req.file, "sinergia/avatars");
+      user.avatar = uploadedAvatar.secure_url;
     } else if (avatar) {
       user.avatar = avatar;
     }
