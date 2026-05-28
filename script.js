@@ -1363,19 +1363,89 @@ function showStoryStep(step) {
 let _cameraStream = null;
 let _cameraFacingMode = "user";
 
+function isLocalhostOrigin() {
+  return ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+}
+
+function isCameraAccessAvailable() {
+  return Boolean(
+    navigator.mediaDevices &&
+      typeof navigator.mediaDevices.getUserMedia === "function",
+  );
+}
+
+function getCameraErrorMessage(error) {
+  if (!window.isSecureContext && !isLocalhostOrigin()) {
+    return "La cámara solo funciona en HTTPS o localhost. Abre la web con https:// para tomar fotos.";
+  }
+
+  if (!isCameraAccessAvailable()) {
+    return "Tu navegador no permite usar la cámara desde esta página. Prueba con Chrome, Edge o Safari actualizado.";
+  }
+
+  switch (error?.name) {
+    case "NotAllowedError":
+    case "PermissionDeniedError":
+      return "El permiso de cámara está bloqueado. Actívalo en los permisos del sitio y vuelve a intentar.";
+    case "NotFoundError":
+    case "DevicesNotFoundError":
+      return "No se encontró una cámara disponible en este dispositivo.";
+    case "NotReadableError":
+    case "TrackStartError":
+      return "La cámara está siendo usada por otra app o el navegador no pudo iniciarla.";
+    case "OverconstrainedError":
+    case "ConstraintNotSatisfiedError":
+      return "No se encontró esa cámara. Intenta cambiar entre frontal y trasera.";
+    default:
+      return "No se pudo acceder a la cámara. Revisa los permisos del navegador.";
+  }
+}
+
+async function requestStoryCameraStream() {
+  const preferredConstraints = {
+    video: {
+      facingMode: { ideal: _cameraFacingMode },
+      width: { ideal: 1280 },
+      height: { ideal: 720 },
+    },
+    audio: false,
+  };
+
+  try {
+    return await navigator.mediaDevices.getUserMedia(preferredConstraints);
+  } catch (error) {
+    if (
+      error?.name === "OverconstrainedError" ||
+      error?.name === "ConstraintNotSatisfiedError"
+    ) {
+      return navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
+      });
+    }
+    throw error;
+  }
+}
+
 async function startStoryCamera() {
   stopStoryCamera();
   try {
-    _cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: _cameraFacingMode },
-      audio: false,
-    });
+    if (!window.isSecureContext && !isLocalhostOrigin()) {
+      throw new Error("INSECURE_CONTEXT");
+    }
+    if (!isCameraAccessAvailable()) {
+      throw new Error("CAMERA_UNSUPPORTED");
+    }
+
+    _cameraStream = await requestStoryCameraStream();
     const feed = document.getElementById("storyCameraFeed");
     if (feed) {
       feed.srcObject = _cameraStream;
+      await feed.play().catch(() => {});
     }
   } catch (e) {
-    showNotification("No se pudo acceder a la cámara", "error");
+    console.error("Error al acceder a la cámara:", e);
+    showNotification(getCameraErrorMessage(e), "error");
     showStoryStep("step1");
   }
 }
@@ -1393,6 +1463,10 @@ function captureStoryPhoto() {
   const feed = document.getElementById("storyCameraFeed");
   const canvas = document.getElementById("storyCaptureCanvas");
   if (!feed || !canvas) return;
+  if (!feed.videoWidth || !feed.videoHeight) {
+    showNotification("La cámara aún no está lista. Intenta de nuevo en un momento.", "error");
+    return;
+  }
   canvas.width = feed.videoWidth;
   canvas.height = feed.videoHeight;
   canvas.getContext("2d").drawImage(feed, 0, 0);
